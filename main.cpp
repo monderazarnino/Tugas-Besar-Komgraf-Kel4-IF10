@@ -81,8 +81,7 @@ public:
 	double r,g,b;
 	Vector3D v[5];
 };
-
-
+		
 class Kubus
 {
 public:
@@ -256,3 +255,235 @@ public:
 	{
 		for(int n=0;n<64;++n) kubus[n].Draw();
 	}
+
+	
+
+	void MakeMove(char k,bool fast)
+	{
+		Matrix m;
+		for(int x=0;x<5;++x)
+			for(int y=0;y<5;++y)
+				m.l[x][y]=0;
+	
+		double ang=fast?3.14159265/10.0:3.14159265/50.0;
+	
+		switch(k)
+		{
+		case(KIRI):
+		case(KIRI2):
+		case(KIRI3):
+			m.l[0][0]=1;
+			m.l[1][1]=cos(ang);
+			m.l[1][2]=sin(ang);
+			m.l[2][1]=-sin(ang);
+			m.l[2][2]=cos(ang);
+			break;
+		case(KANAN):
+		case(KANAN2):
+		case(KANAN3):
+			m.l[0][0]=1;
+			m.l[1][1]=cos(ang);
+			m.l[1][2]=-sin(ang);
+			m.l[2][1]=sin(ang);
+			m.l[2][2]=cos(ang);
+			break;
+		case(ATAS):
+		case(ATAS2):
+		case(ATAS3):
+			m.l[2][2]=1;
+			m.l[0][0]=cos(ang);
+			m.l[0][1]=-sin(ang);
+			m.l[1][0]=sin(ang);
+			m.l[1][1]=cos(ang);
+			break;
+		case(BAWAH):
+		case(BAWAH2):
+		case(BAWAH3):
+			m.l[2][2]=1;
+			m.l[0][0]=cos(ang);
+			m.l[0][1]=sin(ang);
+			m.l[1][0]=-sin(ang);
+			m.l[1][1]=cos(ang);
+			break;
+		case(DEPAN):
+		case(DEPAN2):
+		case(DEPAN3):
+			m.l[1][1]=1;
+			m.l[0][0]=cos(ang);
+			m.l[0][2]=sin(ang);
+			m.l[2][0]=-sin(ang);
+			m.l[2][2]=cos(ang);
+			break;
+		case(BELAKANG):
+		case(BELAKANG2):
+		case(BELAKANG3):
+			m.l[1][1]=1;
+			m.l[0][0]=cos(ang);
+			m.l[0][2]=-sin(ang);
+			m.l[2][0]=sin(ang);
+			m.l[2][2]=cos(ang);
+			break;
+		}
+
+		long t0=glutGet(GLUT_ELAPSED_TIME);
+		for(int t=0;t<(fast?5:25);++t)
+		{
+			for(int n=0;n<64;++n)
+			switch(k)
+			{
+			case(KIRI):
+			case(KANAN3):
+				if(kubus[n].Centre().x<-1) kubus[n].MultiplyBy(m);
+				break;
+			case(KANAN):
+			case(KIRI3):
+				if(kubus[n].Centre().x>+1) kubus[n].MultiplyBy(m);
+				break;
+			case(KIRI2):
+			case(KANAN2):
+				if(kubus[n].Centre().x>-1 && kubus[n].Centre().x<+1) kubus[n].MultiplyBy(m);
+				break;
+			case(ATAS):
+			case(BAWAH3):
+				if(kubus[n].Centre().z>+1) kubus[n].MultiplyBy(m);
+				break;
+			case(BAWAH):
+			case(ATAS3):
+				if(kubus[n].Centre().z<-1) kubus[n].MultiplyBy(m);
+				break;
+			case(ATAS2):
+			case(BAWAH2):
+				if(kubus[n].Centre().z<+1 && kubus[n].Centre().z>-1) kubus[n].MultiplyBy(m);
+				break;
+			case(DEPAN):
+			case(BELAKANG3):
+				if(kubus[n].Centre().y<-1) kubus[n].MultiplyBy(m);
+				break;
+			case(BELAKANG):
+			case(DEPAN3):
+				if(kubus[n].Centre().y>+1) kubus[n].MultiplyBy(m);
+				break;
+			case(DEPAN2):
+			case(BELAKANG2):
+				if(kubus[n].Centre().y<+1 && kubus[n].Centre().y>-1) kubus[n].MultiplyBy(m);
+				break;
+			}
+			KotakMoving();
+			while(glutGet(GLUT_ELAPSED_TIME)<t0+t*10);
+		}
+	}
+	Kubus kubus[64];
+} RKubus;
+
+int main(int argc,char** argv)
+{
+	glutInit(&argc,argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+	glutInitWindowSize(600,600);
+	glutCreateWindow("Rubik's Kubus");
+
+	glutReshapeFunc(UkuranLayar);
+	glutDisplayFunc(KotakMoving);
+	glutKeyboardFunc(PutarRubik);
+	glutMotionFunc(GerakMouse);
+	glutMouseFunc(KlikDrag);
+
+	RKubus.Reset();
+	
+	glutMainLoop();
+	return 0;
+}
+
+void UkuranLayar(int x,int y)
+{
+	if(x!=600 || y!=600) //untuk mengunci ukuran window di 500x500
+	{
+		glutReshapeWindow(600,600);
+		return;
+	}
+	
+	glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluPerspective(60,1,1,100); 
+	glMatrixMode(GL_MODELVIEW);
+	glEnable(GL_DEPTH_TEST);
+}
+
+
+void KotakMoving() //fungsi membuat tanda kotak pergerakan 
+{
+	glClearColor(6,2,.4,.5);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	glLoadIdentity();	
+	gluLookAt(7*sin(phi)*cos(theta),-7*cos(phi)*cos(theta),7*sin(theta),0,0,0,0,0,1);
+
+
+	glPushMatrix();
+		glLineWidth(5); //tebal garis kotak moving
+		glColor3d(0,0,0); //warna garisnya
+		if(GerakanKotak<4) //kondisi pergerakannya
+		{
+			glScaled(1.1,4.7,4.7);
+			glTranslated(GerakanKotak-1,0,0);
+		}
+		if(GerakanKotak>=4 && GerakanKotak<7)
+		{
+			glScaled(4.7,1.1,4.7);
+			glTranslated(0,GerakanKotak-4,0);	
+		}
+		if(GerakanKotak>=7)
+		{
+			glScaled(4.7,4.7,1.1);
+			glTranslated(0,0,GerakanKotak-7);
+		}
+		glutWireCube(1);
+	glPopMatrix();
+	RKubus.Draw();
+	glutSwapBuffers();
+}
+
+void PutarRubik(unsigned char k,int x,int y) //fungsi untuk memutar warna-warna kubus
+{
+	if(k==CHANGEMOVE)
+	{
+		++GerakanKotak;
+		GerakanKotak%=16;
+		glutPostRedisplay();
+		return;
+	}
+	if(k==MAKEMOVE)
+	{
+		if(GerakanKotak==0) RKubus.MakeMove(KIRI,false);
+		if(GerakanKotak==1) RKubus.MakeMove(KIRI2,false);
+		if(GerakanKotak==2) RKubus.MakeMove(KIRI3,false);
+		if(GerakanKotak==3) RKubus.MakeMove(DEPAN,false);
+		if(GerakanKotak==4) RKubus.MakeMove(DEPAN2,false);
+		if(GerakanKotak==5) RKubus.MakeMove(DEPAN3,false);
+		if(GerakanKotak==6) RKubus.MakeMove(BAWAH,false);
+		if(GerakanKotak==7) RKubus.MakeMove(BAWAH2,false);
+		if(GerakanKotak==8) RKubus.MakeMove(BAWAH3,false);
+		return;
+	}
+}
+
+void GerakMouse(int x,int y)
+{
+	theta=(y-dragstarty)/100.0+theta0;
+	phi=(dragstartx-x)/50.0+phi0;
+	
+	if(theta<-1.50) theta=-1.50;
+	if(theta>1.50) theta=1.50;
+	glutPostRedisplay();
+}
+
+void KlikDrag(int b,int s,int x,int y)
+{
+	if(s==GLUT_DOWN)
+	{
+		theta0=theta;
+		phi0=phi;
+		dragstartx=x;
+		dragstarty=y;
+	}
+}
