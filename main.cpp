@@ -1,3 +1,103 @@
+#include <stdlib.h>
+#include <GL/glut.h>
+#include <cmath>
+
+#define ATAS '1'
+#define BAWAH '2'
+#define KIRI '3'
+#define KANAN '4'
+#define DEPAN '5'
+#define BELAKANG '6'
+#define ATAS2 'q'
+#define BAWAH2 'w'
+#define KIRI2 'e'
+#define KANAN2 'r'
+#define DEPAN2 't'
+#define BELAKANG2 'y'
+#define ATAS3 'a'
+#define BAWAH3 's'
+#define KIRI3 'd'
+#define KANAN3 'f'
+#define DEPAN3 'g'
+#define BELAKANG3 'h'
+
+#define CHANGEMOVE '\t' //tab
+#define MAKEMOVE 13	//Enter
+
+
+void UkuranLayar(int x,int y);
+void KotakMoving();
+void PutarRubik(unsigned char k,int x,int y);
+void GerakMouse(int,int);
+void KlikDrag(int,int,int,int);
+
+int dragstartx,dragstarty;
+double theta=.35;
+double phi=.25;
+double theta0,phi0;
+int GerakanKotak=0;
+
+class Matrix
+{
+public:
+	double l[4][4];	//[baris][kolom]
+};
+
+class Vector3D
+{
+public:
+	Vector3D():x(0),y(0),z(0){}
+	double x,y,z;
+	void MultiplyBy(Matrix m)
+	{
+		double xbaru,ybaru,zbaru;
+		xbaru=m.l[0][0]*x+m.l[1][0]*y+m.l[2][0]*z;
+		ybaru=m.l[0][1]*x+m.l[1][1]*y+m.l[2][1]*z;
+		zbaru=m.l[0][2]*x+m.l[1][2]*y+m.l[2][2]*z;
+		x=xbaru;y=ybaru;z=zbaru;
+	}
+	Vector3D& operator+=(Vector3D p){x+=p.x;y+=p.y;z+=p.z;return *this;}
+};
+
+class Face
+{
+public:
+	void Draw()
+	{
+		glColor3d(r,g,b);
+		glBegin(GL_QUADS);
+			for(int n=0;n<5;++n)
+				glVertex3d(v[n].x,v[n].y,v[n].z);
+		glEnd();
+	}
+	void MultiplyBy(Matrix m){for(int n=0;n<5;++n)v[n].MultiplyBy(m);}
+	Vector3D Centre()
+	{
+		Vector3D ret;
+		for(int n=0;n<5;++n)
+			ret+=v[n];
+		return ret;
+	}
+	double r,g,b;
+	Vector3D v[5];
+};
+
+
+class Kubus
+{
+public:
+	void Draw(){for(int n=0;n<7;++n) face[n].Draw();}
+	Vector3D Centre()
+	{
+		Vector3D ret;
+		for(int n=0;n<7;++n)
+			ret+=face[n].Centre();
+		return ret;
+	}
+	void MultiplyBy(Matrix m){for(int n=0;n<6;++n)face[n].MultiplyBy(m);}
+	Face face[7];
+};
+
 class Rubiks
 {
 public:
