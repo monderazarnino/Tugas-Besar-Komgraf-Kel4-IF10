@@ -54,6 +54,7 @@ class Vector3D
 public:
 	Vector3D():x(0),y(0),z(0){}
 	double x,y,z;
+	
 	void MultiplyBy(Matrix m)
 	{
 		double xbaru,ybaru,zbaru;
@@ -99,7 +100,7 @@ public:
 			ret+=face[n].Centre();
 		return ret;
 	}
-	void MultiplyBy(Matrix m){for(int n=0;n<6;++n)face[n].MultiplyBy(m);}
+	void MultiplyBy(Matrix m){for(int n=0;n<7;++n)face[n].MultiplyBy(m);}
 	Face face[7];
 };
 
@@ -256,7 +257,7 @@ public:
 			for(int y=0;y<4;++y)
 				m.l[x][y]=0;
 	
-		double ang=fast?3.14159265/10.0:3.14159265/50.0;
+		double ang=fast?3.14159265/5.0:3.14159265/50.0;
 	
 		switch(k)
 		{
@@ -452,18 +453,18 @@ void PutarRubik(unsigned char k,int x,int y) //fungsi untuk memutar warna-warna 
 		if(GerakanKotak==0) RKubus.MakeMove(KIRI,false);
 		if(GerakanKotak==1) RKubus.MakeMove(KIRI2,false);
 		if(GerakanKotak==2) RKubus.MakeMove(KIRI3,false);
-		if(GerakanKotak==3) RKubus.MakeMove(KIRI3,false);
+		if(GerakanKotak==3) RKubus.MakeMove(KIRI4,false);
 		
 		
 		if(GerakanKotak==4) RKubus.MakeMove(DEPAN,false);
 		if(GerakanKotak==5) RKubus.MakeMove(DEPAN2,false);
 		if(GerakanKotak==6) RKubus.MakeMove(DEPAN3,false);
-		if(GerakanKotak==7) RKubus.MakeMove(DEPAN3,false);
+		if(GerakanKotak==7) RKubus.MakeMove(DEPAN4,false);
 		
 		if(GerakanKotak==8) RKubus.MakeMove(BAWAH,false);
 		if(GerakanKotak==9) RKubus.MakeMove(BAWAH2,false);
 		if(GerakanKotak==10) RKubus.MakeMove(BAWAH3,false);
-		if(GerakanKotak==11) RKubus.MakeMove(BAWAH3,false);
+		if(GerakanKotak==11) RKubus.MakeMove(BAWAH4,false);
 		return;
 	}
 }
